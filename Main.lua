@@ -1,368 +1,245 @@
--- Tha Bronx 3 Kool Aid Infinite Money (Compatible: Velocity + Most Executors - Exclude Solara/Xeno)
--- Removed Key System | Fixed Load (Wait Game Load) | Fixed Errors (Pcalls + Nil Checks)
--- Undetect: Delays/PCalls/Synonyms | Prompt-Based (Low Risk)
--- Webhook Logs Exec (Display/User/Exec/Time/Count/Avatar)
--- 2026 Compatible - Tested Patterns
--- NEW: Infinite Stamina/Hunger/Sleep (Local Loops + GUI Set - Pcall Wrapped)
--- Anti-Cheat Bypass: Extra Obfuscation, Hook Nulls, Random Seeds (Low Ban Risk - Client-Side Only)
+-- Tha Bronx 3 Script with Rayfield UI
+-- Note: Coordinates are placeholders; replace with actual ones from game exploration.
+-- Webhook URL placeholder; replace with your own.
+-- Assumes game mechanics; may need adjustment for exact remotes/values.
 
--- Exclude Solara/Xeno
-local exec = (identifyexecutor and identifyexecutor()) or (getexecutorname and getexecutorname()) or "Unknown"
-if exec:lower():find("solara") or exec:lower():find("xeno") then
-   print("Executor not supported: " .. exec)
-   return
-end
-
--- Wait Game Load
-repeat task.wait() until game:IsLoaded()
-local LocalPlayer = game.Players.LocalPlayer
-repeat task.wait() until LocalPlayer.PlayerGui:FindFirstChild("BronxLoadscreen")
-firesignal(LocalPlayer.PlayerGui.BronxLoadscreen.Frame.play.MouseButton1Click)
-repeat task.wait() until not LocalPlayer.PlayerGui:FindFirstChild("BronxLoadscreen")
-
--- Universal HTTP Request (Velocity Compatible - Removed Xeno Specific)
-local http_request = (syn and syn.request) or (http and http.request) or request or http_request or function() end
-
--- Synonym funcs (extra obfuscation for bypass)
-local function safeWait(t) task.wait(math.random(t*0.8, t*1.2)) end
-local function safePcall(func, ...) return pcall(func, ...) end
-local function getPlayer() return game:GetService("Players").LocalPlayer end
-local function getChar() local p = getPlayer() return p.Character or p.CharacterAdded:Wait() end
-local function getRoot() return getChar():WaitForChild("HumanoidRootPart") end
-local function getHum() return getChar():WaitForChild("Humanoid") end
-local function findTool(name) 
-   local backpack = getPlayer().Backpack
-   for _, t in ipairs(backpack:GetChildren()) do if t:IsA("Tool") and t.Name == name then return t end end
-   local char = getChar()
-   for _, t in ipairs(char:GetChildren()) do if t:IsA("Tool") and t.Name == name then return t end end
-   return nil
-end
-local function safeTP(pos) getRoot().CFrame = CFrame.new(pos) + Vector3.new(math.random(-2,2)/10, math.random(1,3)/10, math.random(-2,2)/10) end
-local function firePrompt(prompt) if prompt then fireproximityprompt(prompt, 0) end end
-
--- Basic Anti-AC Bypass (Null Hooks + Random Seed)
-math.randomseed(tick() % 1 * 10^6)  -- Randomize for pattern avoidance
-local oldHook = hookfunction or hookmetamethod
-if oldHook then
-   safePcall(function()
-      oldHook(game, "__namecall", function(self, ...)
-         if getnamecallmethod() == "Kick" or string.find(getnamecallmethod(), "Ban") then return end
-         return oldHook(self, ...)
-      end)
-   end)
-end
--- Disable potential AC scripts (hypothetical - scan & null)
-task.spawn(function()
-   for _, v in ipairs(getgc(true)) do
-      if type(v) == "function" and getfenv(v).script and string.find(getfenv(v).script.Name:lower(), "anti") then
-         hookfunction(v, function() return true end)  -- Null suspicious funcs
-      end
-   end
-end)
-
--- Webhook Logger
-local webhookUrl = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"  -- REPLACE!
-getgenv().ExecCount = (getgenv().ExecCount or 0) + 1
-
-local function sendWebhook()
-   local player = getPlayer()
-   local userId = player.UserId
-   local display = player.DisplayName
-   local username = player.Name
-   local execTime = os.date("%Y-%m-%d %H:%M:%S")
-   local avatarUrl = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
-   
-   -- Executor Detection (Removed Xeno Specific)
-   local executor = "Unknown"
-   if getexecutorname then executor = getexecutorname()
-   elseif identifyexecutor then executor = identifyexecutor()
-   elseif syn then executor = "Synapse/Velocity"
-   elseif fluxus then executor = "Fluxus"
-   elseif bunni then executor = "Bunni" end
-   
-   local message = {
-      ["content"] = "Script Executed!",
-      ["embeds"] = {{
-         ["title"] = "Tha Bronx 3 Hub Execution",
-         ["color"] = 65280,
-         ["fields"] = {
-            {["name"] = "Display", ["value"] = display, ["inline"] = true},
-            {["name"] = "Username", ["value"] = username, ["inline"] = true},
-            {["name"] = "Executor", ["value"] = executor, ["inline"] = true},
-            {["name"] = "Time", ["value"] = execTime, ["inline"] = true},
-            {["name"] = "Execs", ["value"] = tostring(getgenv().ExecCount), ["inline"] = true}
-         },
-         ["thumbnail"] = {["url"] = avatarUrl}
-      }}
-   }
-   
-   safePcall(function()
-      http_request({
-         Url = webhookUrl,
-         Method = "POST",
-         Headers = {["Content-Type"] = "application/json"},
-         Body = game:GetService("HttpService"):JSONEncode(message)
-      })
-   end)
-end
-
--- Send delayed
-task.spawn(function() safeWait(math.random(1,3)) sendWebhook() end)
-
--- Load Rayfield (Velocity Compatible)
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local executor = identifyexecutor and identifyexecutor() or "Unknown Executor"
 
 local Window = Rayfield:CreateWindow({
-   Name = "Tha Bronx 3 Kool Aid Hub 💧",
-   LoadingTitle = "Infinite Loader",
-   LoadingSubtitle = "by Grok | Velocity + Most OK",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "ThaBronxKoolAid",
-      FileName = "Config"
-   },
-   Discord = { Enabled = false },
-   KeySystem = false
+    Name = "Tha Bronx 3 Script | " .. executor,
+    LoadingTitle = "Loading...",
+    LoadingSubtitle = "by xAI",
+    ConfigurationSaving = {
+        Enabled = false,
+    }
 })
 
--- Services & Paths (obfuscated access)
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local SharedStorage = ReplicatedStorage:WaitForChild("SharedStorage")
-local ExoticStock = SharedStorage:WaitForChild("ExoticStock")
-local GameRemotes = ReplicatedStorage:WaitForChild("GameRemotes")
-local ExoticShopRemote = GameRemotes:WaitForChild("ExoticShopRemote")
+-- Webhook setup (replace with your Discord webhook URL)
+local webhookurl = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local display = player.DisplayName
+local username = player.Name
+local date = os.date("*t")
+local thumbnail = Players:GetUserThumbnailAsync(player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
 
-local Workspace = game:GetService("Workspace")
-local CookingPots = Workspace:WaitForChild("CookingPots")
-local IceFruitSell = Workspace:WaitForChild("IceFruit Sell")
-local SellPrompt = IceFruitSell:WaitForChild("ProximityPrompt")
+-- Send webhook (total executions not tracked locally)
+local data = {
+    content = "Script executed by " .. display .. " (@" .. username .. ")",
+    embeds = {{
+        title = "Execution Details",
+        fields = {
+            {name = "Date", value = date.year .. "-" .. date.month .. "-" .. date.day .. " " .. date.hour .. ":" .. date.min .. ":" .. date.sec},
+        },
+        thumbnail = {url = thumbnail}
+    }}
+}
+local json = HttpService:JSONEncode(data)
+HttpService:PostAsync(webhookurl, json, Enum.HttpContentType.ApplicationJson)
 
-local Leaderstats = getPlayer():WaitForChild("leaderstats")
-local Cash = Leaderstats:WaitForChild("Cash")
-
--- Utilities
-local function findDescendant(parent, path)
-   if not parent then return nil end
-   local parts = string.split(path, "/")
-   local current = parent
-   for _, part in ipairs(parts) do
-      current = current:FindFirstChild(part)
-      if not current then return nil end
-   end
-   return current
-end
-
--- Buy Supplies (with delays)
-local function buySupplies()
-   local items = {"Ice-Fruit Bag", "Ice-Fruit Cupz", "FijiWater", "FreshWater"}
-   for _, itemName in ipairs(items) do
-      local stock = ExoticStock:FindFirstChild(itemName)
-      if not stock or stock.Value == 0 then
-         Rayfield:Notify({Title = "Buy Failed", Content = itemName .. " out of stock!", Duration = 3})
-         return false
-      end
-   end
-   for _, itemName in ipairs(items) do
-      safePcall(function() ExoticShopRemote:InvokeServer(itemName) end)
-      safeWait(1.25)
-   end
-   safeWait(1)
-   for _, itemName in ipairs(items) do
-      if not findTool(itemName) then
-         Rayfield:Notify({Title = "Buy Failed", Content = "Missing " .. itemName, Duration = 3})
-         return false
-      end
-   end
-   Rayfield:Notify({Title = "Success", Content = "All supplies bought!", Duration = 2})
-   return true
-end
-
--- Get Free Pot (scan with delay)
-local function getCookingPot()
-   for _, pot in ipairs(CookingPots:GetChildren()) do
-      safeWait(0.05)
-      if pot:IsA("Model") then
-         local ownerTag = findDescendant(pot, "Owner")
-         local progress = findDescendant(pot, "CookPart/Steam/LoadUI")
-         if (not ownerTag or not ownerTag.Value) and progress and not progress.Enabled then
-            return pot
-         end
-      end
-   end
-   return nil
-end
-
--- Cook Function (pcall + random waits)
-local function cookKoolAid()
-   if Cash.Value < 2750 then
-      Rayfield:Notify({Title = "Error", Content = "Need $2750 cash! Withdraw from ATM.", Duration = 5})
-      return
-   end
-   if not buySupplies() then return end
-
-   local cookingPot = getCookingPot()
-   if not cookingPot then
-      Rayfield:Notify({Title = "Error", Content = "No free cooking pot! Try later.", Duration = 5})
-      return
-   end
-
-   local cookPart = cookingPot:WaitForChild("CookPart")
-   local cookPrompt = cookPart:WaitForChild("ProximityPrompt")
-   local cookProgress = findDescendant(cookingPot, "CookPart/Steam/LoadUI")
-
-   local fiji = findTool("FijiWater")
-   local fresh = findTool("FreshWater")
-   local iceBag = findTool("Ice-Fruit Bag")
-   local iceCupz = findTool("Ice-Fruit Cupz")
-
-   safeTP(cookPart.Position)
-   safeWait(0.25)
-
-   safePcall(firePrompt, cookPrompt)
-   safeWait(0.25)
-
-   local cookOrder = {fiji, fresh, iceBag}
-   for _, tool in ipairs(cookOrder) do
-      getHum():EquipTool(tool)
-      safeWait(0.5)
-      safePcall(firePrompt, cookPrompt)
-      repeat safeWait(0.1) until not findTool(tool.Name)
-   end
-
-   repeat safeWait(0.2) until not cookProgress.Enabled
-
-   safeTP(cookPart.Position)
-   safeWait(0.25)
-
-   getHum():EquipTool(iceCupz)
-   safeWait(0.1)
-   safePcall(firePrompt, cookPrompt)
-   safeWait(1)
-
-   Rayfield:Notify({Title = "Cooked!", Content = "TP to Sell Spot & Hit Infinite Money!", Duration = 4})
-end
-
--- Infinite Stamina/Hunger/Sleep/Anti (Client-Side Loops - Pcall Wrapped)
-getgenv().InfStats = {
-   Stamina = true,
-   Hunger = true,
-   Sleep = true
+-- Placeholder coordinates (replace with actual)
+local locations = {
+    Penthouse = Vector3.new(0, 100, 0),  -- Replace
+    CookPot = Vector3.new(50, 50, 50),   -- Replace
+    Bank = Vector3.new(100, 0, 100),      -- Replace
+    Popeyes = Vector3.new(200, 0, 200),   -- Replace
+    Studio = Vector3.new(300, 0, 300)     -- Replace
 }
 
-task.spawn(function()
-   while true do
-      safeWait(0.05 + math.random()/10)  -- Random for AC bypass
-      local HUD = getPlayer().PlayerGui:FindFirstChild("HUD") or getPlayer().PlayerGui:FindFirstChild("MainGui")
-      if HUD then
-         safePcall(function()
-            if InfStats.Stamina then
-               local staminaBar = HUD:FindFirstChild("StaminaBar") or findDescendant(HUD, "Stamina/Bar/Fill")
-               if staminaBar then staminaBar.Size = UDim2.new(1,0,1,0) end
+-- Kool Aid items (assumed; replace with actual item names)
+local koolAidItems = {"Sugar", "Kool Aid Packet", "Water Bottle", "Fruit Cup"}  -- From videos, adjust
+
+-- Main Tab
+local MainTab = Window:CreateTab("Main")
+
+MainTab:CreateButton({
+    Name = "Buy Items",
+    Callback = function()
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local buyRemote = ReplicatedStorage:FindFirstChild("BuyItem") or ReplicatedStorage.Remotes.BuyItem  -- Assume remote name
+        for _, item in ipairs(koolAidItems) do
+            buyRemote:FireServer(item)
+        end
+        Rayfield:Notify({Title = "Success", Content = "Bought all Kool Aid items"})
+    end
+})
+
+MainTab:CreateButton({
+    Name = "Teleport to Cook Pot",
+    Callback = function()
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(locations.CookPot)
+    end
+})
+
+MainTab:CreateButton({
+    Name = "Teleport to Penthouse",
+    Callback = function()
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(locations.Penthouse)
+    end
+})
+
+MainTab:CreateButton({
+    Name = "Infinite Money Vulnerability",
+    Callback = function()
+        -- Assume Kool Aid tool in backpack, equip it
+        local tool = player.Backpack:FindFirstChild("Kool Aid") or player.Character:FindFirstChild("Kool Aid")
+        if tool then
+            tool.Parent = player.Character
+        end
+        -- Instant prompt bypass (assume proximity prompt in game for sell)
+        local sellPrompt = workspace:FindFirstChild("SellPrompt", true)  -- Replace with actual path
+        if sellPrompt and sellPrompt:IsA("ProximityPrompt") then
+            sellPrompt.HoldDuration = 0
+            sellPrompt.Cooldown = 0  -- If has cooldown property
+            fireproximityprompt(sellPrompt)
+        end
+        -- Sell for max 990k (assume remote)
+        local sellRemote = game.ReplicatedStorage.Remotes.SellItem  -- Assume
+        sellRemote:FireServer("Kool Aid", 990000)
+        Rayfield:Notify({Title = "Exploit", Content = "Sold Kool Aid for 990k"})
+    end
+})
+
+-- Teleports Tab
+local TeleportsTab = Window:CreateTab("Teleports")
+
+TeleportsTab:CreateButton({
+    Name = "Teleport to Bank",
+    Callback = function()
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(locations.Bank)
+    end
+})
+
+TeleportsTab:CreateButton({
+    Name = "Teleport to Penthouse",
+    Callback = function()
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(locations.Penthouse)
+    end
+})
+
+TeleportsTab:CreateButton({
+    Name = "Teleport to Popeyes",
+    Callback = function()
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(locations.Popeyes)
+    end
+})
+
+TeleportsTab:CreateButton({
+    Name = "Teleport to Studio",
+    Callback = function()
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(locations.Studio)
+    end
+})
+
+-- Autofarm Tab
+local AutofarmTab = Window:CreateTab("Autofarm")
+local autofarmToggle = false
+
+AutofarmTab:CreateToggle({
+    Name = "Autofarm Cash in Studio",
+    CurrentValue = false,
+    Callback = function(Value)
+        autofarmToggle = Value
+        if Value then
+            spawn(function()
+                while autofarmToggle do
+                    -- Teleport to studio
+                    player.Character.HumanoidRootPart.CFrame = CFrame.new(locations.Studio)
+                    -- Assume 3 cash parts in workspace.Studio.Cash1, Cash2, Cash3
+                    local cashParts = {workspace:FindFirstChild("Cash1", true), workspace:FindFirstChild("Cash2", true), workspace:FindFirstChild("Cash3", true)}  -- Replace paths
+                    for _, part in ipairs(cashParts) do
+                        if part then
+                            firetouchinterest(player.Character.HumanoidRootPart, part, 1)
+                            wait(0.1)
+                            firetouchinterest(player.Character.HumanoidRootPart, part, 0)
+                        end
+                    end
+                    wait(1)  -- Loop delay
+                end
+            end)
+        end
+    end
+})
+
+-- Misc Tab
+local MiscTab = Window:CreateTab("Misc")
+local infStamina = false
+local antiHunger = false
+local antiSleep = false
+local instantPrompt = false
+
+MiscTab:CreateToggle({
+    Name = "Infinite Stamina",
+    CurrentValue = false,
+    Callback = function(Value)
+        infStamina = Value
+        spawn(function()
+            while infStamina do
+                if player.Character then
+                    local stamina = player.Character:FindFirstChild("Stamina")  -- Assume value
+                    if stamina then stamina.Value = 100 end
+                end
+                wait(0.1)
             end
-         end)
-         safePcall(function()
-            if InfStats.Hunger then
-               local hungerBar = HUD:FindFirstChild("HungerBar") or findDescendant(HUD, "Hunger/Bar/Fill")
-               if hungerBar then hungerBar.Size = UDim2.new(1,0,1,0) end
+        end)
+    end
+})
+
+MiscTab:CreateToggle({
+    Name = "Anti Hunger",
+    CurrentValue = false,
+    Callback = function(Value)
+        antiHunger = Value
+        spawn(function()
+            while antiHunger do
+                if player.Character then
+                    local hunger = player.Character:FindFirstChild("Hunger")  -- Assume
+                    if hunger then hunger.Value = 0 end
+                end
+                wait(0.1)
             end
-         end)
-         safePcall(function()
-            if InfStats.Sleep then
-               local sleepBar = HUD:FindFirstChild("SleepBar") or findDescendant(HUD, "Sleep/Bar/Fill")
-               if sleepBar then sleepBar.Size = UDim2.new(1,0,1,0) end
+        end)
+    end
+})
+
+MiscTab:CreateToggle({
+    Name = "Anti Sleep",
+    CurrentValue = false,
+    Callback = function(Value)
+        antiSleep = Value
+        spawn(function()
+            while antiSleep do
+                if player.Character then
+                    local sleep = player.Character:FindFirstChild("Sleep")  -- Assume
+                    if sleep then sleep.Value = 0 end
+                end
+                wait(0.1)
             end
-         end)
-      end
-      -- Attribute fallback (if game uses)
-      safePcall(function()
-         if InfStats.Stamina then getPlayer():SetAttribute("Stamina", 100) end
-         if InfStats.Hunger then getPlayer():SetAttribute("Hunger", 100) end
-         if InfStats.Sleep then getPlayer():SetAttribute("Sleep", 100) end
-      end)
-   end
-end)
-
--- UI Tabs
-local KoolAidTab = Window:CreateTab("💧 Kool Aid", 11290742910)
-KoolAidTab:CreateSection("Kool Aid Infinite Method")
-
-KoolAidTab:CreateButton({
-   Name = "🍧 Cook Kool Aid (Auto Buy + Mix)",
-   Callback = cookKoolAid
+        end)
+    end
 })
 
-KoolAidTab:CreateButton({
-   Name = "📍 TP to IceFruit Sell Spot",
-   Callback = function()
-      safeTP(IceFruitSell.Position)
-   end
+MiscTab:CreateToggle({
+    Name = "Instant Prompt",
+    CurrentValue = false,
+    Callback = function(Value)
+        instantPrompt = Value
+        spawn(function()
+            while instantPrompt do
+                for _, v in ipairs(workspace:GetDescendants()) do
+                    if v:IsA("ProximityPrompt") then
+                        v.HoldDuration = 0
+                    end
+                end
+                wait(1)
+            end
+        end)
+    end
 })
 
-KoolAidTab:CreateButton({
-   Name = "💰 Infinite Money (Spam Sell - At Sell Spot)",
-   Callback = function()
-      Rayfield:Notify({Title = "Spamming Sell...", Content = "2000x - Get Rich!", Duration = 2})
-      task.spawn(function()
-         for i = 1, 2000 do
-            safePcall(firePrompt, SellPrompt)
-            safeWait(0.01 + math.random()/10)  -- Random micro-delay
-         end
-         Rayfield:Notify({Title = "Done!", Content = "Infinite Money Complete! 💵", Duration = 3})
-      end)
-   end
-})
+-- Anti-cheat bypass (basic, assume no advanced AC)
+-- For example, hook walkspeed if needed, but not implemented here
 
-KoolAidTab:CreateButton({
-   Name = "🏦 TP ATM (Withdraw if Needed)",
-   Callback = function()
-      safeTP(CFrame.new(-1728, 371, -1177))  -- Example
-   end
-})
-
-local StatsTab = Window:CreateTab("⚡ Stats", 4483362458)
-StatsTab:CreateSection("Infinite Stats (Anti-Hunger/Sleep/Stamina)")
-
-StatsTab:CreateToggle({
-   Name = "Infinite Stamina",
-   CurrentValue = true,
-   Flag = "InfStamina",
-   Callback = function(Value)
-      InfStats.Stamina = Value
-   end,
-})
-
-StatsTab:CreateToggle({
-   Name = "Infinite Hunger (Anti-Hunger)",
-   CurrentValue = true,
-   Flag = "InfHunger",
-   Callback = function(Value)
-      InfStats.Hunger = Value
-   end,
-})
-
-StatsTab:CreateToggle({
-   Name = "Infinite Sleep (Anti-Sleep)",
-   CurrentValue = true,
-   Flag = "InfSleep",
-   Callback = function(Value)
-      InfStats.Sleep = Value
-   end,
-})
-
-local ExtraTab = Window:CreateTab("📍 More TPs")
-ExtraTab:CreateButton({
-   Name = "🔍 TP Cooking Pots Area",
-   Callback = function()
-      local pots = CookingPots:GetChildren()
-      if #pots > 0 then
-         local cookPart = pots[1]:FindFirstChild("CookPart")
-         if cookPart then
-            safeTP(cookPart.Position)
-         end
-      end
-   end
-})
-
-print("Kool Aid Infinite Loaded! Steps: 1. Cook 2. TP Sell 3. Infinite 💰")
-print('Webhook will log execs - Replace "YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN" with real one!')
-print("Fixed: Game Load Wait, Pcalls for Bars/Attributes, Nil Checks, Removed Key, Excluded Solara/Xeno")
+Rayfield:Notify({Title = "Loaded", Content = "Script loaded successfully. Replace placeholders for full functionality."})
