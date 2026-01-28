@@ -1,4 +1,4 @@
--- Tha Bronx 3 Exploit Hub - Updated Positions
+
 local executor = identifyexecutor and identifyexecutor() or "Unknown Executor"
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -38,9 +38,9 @@ local customTheme = {
 }
 
 local Window = Rayfield:CreateWindow({
-   Name = "Tha Bronx 3 Exploit Hub - " .. executor,
-   LoadingTitle = "Loading Exploit...",
-   LoadingSubtitle = "by Grok",
+   Name = "Tridentz Hub - " .. executor,
+   LoadingTitle = "Loading Tridentz Hub",
+   LoadingSubtitle = "",
    ConfigurationSaving = { Enabled = true, FolderName = nil, FileName = "Bronx3Hub" },
    Discord = {
       Enabled = false,
@@ -51,11 +51,11 @@ local Window = Rayfield:CreateWindow({
    KeySettings = {
       Title = "",
       Subtitle = "Authentication Required",
-      Note = "Get your key at: discord.gg/dkshub",
-      FileName = "jc_hub_key",
+      Note = "Get your key at: https://discord.gg/sZ4fVmzk8K",
+      FileName = "",
       SaveKey = true,
       GrabKeyFromSite = false,
-      Key = { "" },
+      Key = { "6RZP-X9M4-QA7K-WE2T" },
       Theme = customTheme
    }
 })
@@ -73,7 +73,7 @@ local HttpService = game:GetService("HttpService")
 local player = game.Players.LocalPlayer
 
 -- Replace with your real Discord webhook URL
-local webhookUrl = "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+local webhookUrl = "https://discord.com/api/webhooks/1466026863930511461/NsgCtv12KhdWHHIqjmgok7-5a7CNphL9T6U2qYH5vtzwXEbN747SoVRDeZNYzHrqlMkt"
 
 local function sendWebhook()
    local username = player.Name
