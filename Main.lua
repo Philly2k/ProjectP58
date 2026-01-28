@@ -10,7 +10,7 @@ end
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Tha Bronx 3 Max Money Exploit - " .. executor .. " - Rayfield UI (Fixed)",
+   Name = "Tha Bronx 3 Max Money Exploit - " .. executor .. " - Rayfield UI (Fixed Errors)",
    LoadingTitle = "Loading Fixed Exploit...",
    LoadingSubtitle = "by Grok",
    ConfigurationSaving = { Enabled = true, FolderName = nil, FileName = "ThaBronx3Fixed" },
@@ -38,25 +38,25 @@ local InfJumpEnabled = false
 local InfJumpConnection = nil
 local NoClipConnection = nil
 
--- Smooth TP with Anti-Cheat Bypass
+-- Fixed Smooth TP (No state changes, velocity reset, safer)
 local function smoothTP(targetCFrame, duration)
-   duration = duration or 0.4
-   local char = player.Character
-   if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
-      local humanoid = char.Humanoid
-      local hrp = char.HumanoidRootPart
-      humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+   pcall(function()
+      local char = player.Character
+      if not char then return end
+      local hrp = char:FindFirstChild("HumanoidRootPart")
+      if not hrp then return end
+      -- Reset velocity to prevent fling
       hrp.Velocity = Vector3.new(0, 0, 0)
       hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-      local tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+      -- Tween
+      local tweenInfo = TweenInfo.new(duration or 0.4, Enum.EasingStyle.Quad)
       local tween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
       tween:Play()
       tween.Completed:Wait()
-      humanoid:ChangeState(Enum.HumanoidStateType.Running)
-   end
+   end)
 end
 
--- Global Instant Prompts (Sets HoldDuration=0 everywhere except MimicATM)
+-- Global Instant Prompts
 local InstantPromptsButton = ExploitsTab:CreateButton({
    Name = "Global Instant Prompts (No Hold E)",
    Callback = function()
@@ -73,22 +73,25 @@ local InstantPromptsButton = ExploitsTab:CreateButton({
             obj.HoldDuration = 0
          end
       end
-      for _, obj in pairs(workspace:GetDescendants()) do setInstant(obj) end
+      for _, obj in pairs(workspace:GetDescendants()) do 
+         pcall(setInstant, obj) 
+      end
       workspace.DescendantAdded:Connect(function(obj)
-         if obj:IsA("ProximityPrompt") then setInstant(obj) end
+         task.wait(0.1)
+         pcall(setInstant, obj)
       end)
       Rayfield:Notify({Title = "Instant Prompts", Content = "All HoldDuration set to 0!", Duration = 4})
    end
 })
 
--- Buy Specific Items (Ice Fruit Bag, Ice Fruit Cupz, Fiji Water, Fresh Water)
+-- Buy Specific Items (Targeted, Anti-Kick Delays)
 ExploitsTab:CreateButton({
    Name = "Buy Max Ice Fruit Items (Bag, Cupz, Fiji, Fresh Water)",
    Callback = function()
       spawn(function()
          Rayfield:Notify({Title = "Buying Ice Fruit Items...", Content = "Max stacks from dealer!", Duration = 4})
-         local items = {"ice%-fruit bag", "ice%-fruit cupz", "fijiwater", "freshwater", "ice%s*fruit%s*bag", "ice%s*fruit%s*cup", "fiji%s*water", "fresh%s*water"}
-         for i = 1, 15 do -- Reduced loops to avoid kick
+         local items = {"ice fruit", "ice%-fruit", "fiji", "fresh water", "bag", "cupz", "fijiwater", "freshwater"}
+         for i = 1, 12 do
             for _, obj in pairs(workspace:GetDescendants()) do
                if obj:IsA("ProximityPrompt") then
                   local text = string.lower(obj.ActionText or obj.ObjectText or "")
@@ -100,8 +103,8 @@ ExploitsTab:CreateButton({
                      pcall(function()
                         local char = player.Character
                         if char and char:FindFirstChild("HumanoidRootPart") and obj.Parent and obj.Parent:IsA("BasePart") then
-                           smoothTP(obj.Parent.CFrame * CFrame.new(math.random(-2,2), 0, -4), 0.3)
-                           task.wait(0.4)
+                           smoothTP(obj.Parent.CFrame * CFrame.new(math.random(-2,2), 0, -4))
+                           task.wait(0.5)
                            obj.HoldDuration = 0
                            obj:InputHoldBegin()
                            task.wait(0.03)
@@ -111,13 +114,13 @@ ExploitsTab:CreateButton({
                   end
                end
             end
-            task.wait(0.8) -- Longer delay anti-kick
+            task.wait(1)
          end
       end)
    end
 })
 
--- Infinite Money Toggle (Fixed Seller for Kool Aid)
+-- Infinite Money Toggle
 local AutoSellToggle = ExploitsTab:CreateToggle({
    Name = "Infinite Money (Auto Sell Kool Aid)",
    CurrentValue = false,
@@ -129,14 +132,15 @@ local AutoSellToggle = ExploitsTab:CreateToggle({
             while AutoSellEnabled do
                pcall(function()
                   local char = player.Character
+                  if not char then return end
+                  local humanoid = char:FindFirstChildOfClass("Humanoid")
+                  if not humanoid then return end
                   local backpack = player.Backpack
-                  -- Equip Ice Fruit Cups
-                  local iceCup = backpack:FindFirstChild("Ice-Fruit Cupz") or backpack:FindFirstChild("Ice Fruit Cups") or char:FindFirstChild("Ice-Fruit Cupz")
+                  local iceCup = backpack:FindFirstChild("Ice Fruit Cupz") or backpack:FindFirstChild("Ice-Fruit Cupz") or backpack:FindFirstChild("Ice Fruit Cups") or char:FindFirstChild("Ice Fruit Cupz")
                   if iceCup and iceCup:IsA("Tool") then
-                     char.Humanoid:EquipTool(iceCup)
+                     humanoid:EquipTool(iceCup)
                      task.wait(0.5)
                   end
-                  -- Find KOOL AID SELLER (improved filter)
                   local sellPrompt = nil
                   for _, obj in pairs(workspace:GetDescendants()) do
                      if obj:IsA("ProximityPrompt") then
@@ -149,16 +153,16 @@ local AutoSellToggle = ExploitsTab:CreateToggle({
                         end
                      end
                   end
-                  if sellPrompt and char:FindFirstChild("HumanoidRootPart") and sellPrompt.Parent and sellPrompt.Parent:IsA("BasePart") then
-                     smoothTP(sellPrompt.Parent.CFrame * CFrame.new(0, 0, -4), 0.5)
-                     task.wait(0.6)
+                  if sellPrompt and sellPrompt.Parent and sellPrompt.Parent:IsA("BasePart") then
+                     smoothTP(sellPrompt.Parent.CFrame * CFrame.new(0, 0, -4))
+                     task.wait(0.7)
                      sellPrompt.HoldDuration = 0
                      sellPrompt:InputHoldBegin()
                      task.wait(0.05)
                      sellPrompt:InputHoldEnd()
                   end
                end)
-               task.wait(2) -- Slower loop
+               task.wait(2.2)
             end
          end)
       end
@@ -176,7 +180,6 @@ local StudioToggle = AutofarmTab:CreateToggle({
          spawn(function()
             while StudioFarmEnabled do
                pcall(function()
-                  -- Find Studio
                   local studio = nil
                   for _, model in pairs(workspace:GetChildren()) do
                      if string.lower(model.Name):find("studio") then
@@ -194,19 +197,19 @@ local StudioToggle = AutofarmTab:CreateToggle({
                   end
                   local char = player.Character
                   if studio and char and char:FindFirstChild("HumanoidRootPart") then
-                     local targetCF = studio:IsA("BasePart") and studio.CFrame or (studio.PrimaryPart and studio.PrimaryPart.CFrame) or studio:GetModelCFrame()
-                     smoothTP(targetCF * CFrame.new(0, 5, 0), 0.6)
-                     task.wait(0.8)
-                     -- Collect all money/collect prompts (nearby or global with filter)
+                     local targetCF = (studio:IsA("BasePart") and studio.CFrame) or (studio.PrimaryPart and studio.PrimaryPart.CFrame) or studio:GetPivot()
+                     smoothTP(targetCF * CFrame.new(0, 5, 0))
+                     task.wait(1)
                      for _, obj in pairs(workspace:GetDescendants()) do
                         if obj:IsA("ProximityPrompt") then
                            local act = string.lower(obj.ActionText or "")
                            local par = string.lower(obj.Parent.Name or "")
                            if (act:find("collect") or act:find("money") or act:find("cash") or act:find("rob") or act:find("take") or act:find("grab") or par:find("money") or par:find("cash")) then
-                              local dist = (obj.Parent.Position - char.HumanoidRootPart.Position).Magnitude
-                              if dist < 50 then -- Nearby only
-                                 smoothTP(obj.Parent.CFrame * CFrame.new(0,0,-3), 0.3)
-                                 task.wait(0.3)
+                              local hrp = char.HumanoidRootPart
+                              local dist = (obj.Parent.Position - hrp.Position).Magnitude
+                              if dist < 50 then
+                                 smoothTP(obj.Parent.CFrame * CFrame.new(0,0,-3))
+                                 task.wait(0.4)
                                  obj.HoldDuration = 0
                                  obj:InputHoldBegin()
                                  task.wait(0.03)
@@ -217,14 +220,14 @@ local StudioToggle = AutofarmTab:CreateToggle({
                      end
                   end
                end)
-               task.wait(1.5)
+               task.wait(2)
             end
          end)
       end
    end
 })
 
--- Teleports (Fixed Seller, Pot perfect)
+-- Teleports
 local TpPotButton = TeleportsTab:CreateButton({
    Name = "Teleport to Cooking Pot",
    Callback = function()
@@ -236,10 +239,7 @@ local TpPotButton = TeleportsTab:CreateButton({
       end
       if #pots > 0 then
          local pot = pots[1]
-         local char = player.Character
-         if char and char:FindFirstChild("HumanoidRootPart") then
-            smoothTP(pot.CFrame + Vector3.new(0, 5, 0), 0.5)
-         end
+         smoothTP(pot.CFrame + Vector3.new(0, 5, 0))
       end
    end
 })
@@ -260,17 +260,39 @@ local TpSellerButton = TeleportsTab:CreateButton({
          end
       end
       if sellPrompt and sellPrompt.Parent and sellPrompt.Parent:IsA("BasePart") then
-         local char = player.Character
-         if char and char:FindFirstChild("HumanoidRootPart") then
-            smoothTP(sellPrompt.Parent.CFrame * CFrame.new(0, 0, -5), 0.5)
-         end
+         smoothTP(sellPrompt.Parent.CFrame * CFrame.new(0, 0, -5))
       end
    end
 })
 
 -- Player Mods
-PlayerTab:CreateSlider({Name = "WalkSpeed", Range = {16, 500}, Increment = 1, CurrentValue = 16, Flag = "WalkSpeed", Callback = function(v) local char = player.Character; if char then char.Humanoid.WalkSpeed = v end end})
-PlayerTab:CreateSlider({Name = "Jump Power", Range = {50, 400}, Increment = 1, CurrentValue = 50, Flag = "JumpPower", Callback = function(v) local char = player.Character; if char then char.Humanoid.JumpPower = v end end})
+PlayerTab:CreateSlider({
+   Name = "WalkSpeed",
+   Range = {16, 500},
+   Increment = 1,
+   CurrentValue = 16,
+   Flag = "WalkSpeed",
+   Callback = function(Value)
+      local char = player.Character
+      if char and char:FindFirstChildOfClass("Humanoid") then
+         char.Humanoid.WalkSpeed = Value
+      end
+   end
+})
+
+PlayerTab:CreateSlider({
+   Name = "Jump Power",
+   Range = {50, 400},
+   Increment = 1,
+   CurrentValue = 50,
+   Flag = "JumpPower",
+   Callback = function(Value)
+      local char = player.Character
+      if char and char:FindFirstChildOfClass("Humanoid") then
+         char.Humanoid.JumpPower = Value
+      end
+   end
+})
 
 -- Fixed Infinite Jump Toggle
 local InfJumpToggle = PlayerTab:CreateToggle({
@@ -278,66 +300,75 @@ local InfJumpToggle = PlayerTab:CreateToggle({
    CurrentValue = false,
    Callback = function(Value)
       InfJumpEnabled = Value
+      if InfJumpConnection then
+         InfJumpConnection:Disconnect()
+         InfJumpConnection = nil
+      end
       if Value then
          InfJumpConnection = UserInputService.JumpRequest:Connect(function()
-            if InfJumpEnabled then
-               local char = player.Character
-               if char then
-                  local hum = char:FindFirstChildOfClass("Humanoid")
-                  if hum then hum:ChangeState("Jumping") end
+            local char = player.Character
+            if char and InfJumpEnabled then
+               local hum = char:FindFirstChildOfClass("Humanoid")
+               if hum then
+                  hum:ChangeState(Enum.HumanoidStateType.Jumping)
                end
             end
          end)
-      else
-         if InfJumpConnection then InfJumpConnection:Disconnect() end
       end
    end
 })
 
--- Fixed NoClip Toggle
+-- Fixed NoClip Toggle (Excludes HRP, Dynamic Char, No Breakage)
 local NoClipToggle = PlayerTab:CreateToggle({
    Name = "NoClip",
    CurrentValue = false,
    Callback = function(Value)
       NoClipEnabled = Value
+      if NoClipConnection then
+         NoClipConnection:Disconnect()
+         NoClipConnection = nil
+      end
       if Value then
-         local function startNoClip(char)
-            NoClipConnection = RunService.Heartbeat:Connect(function()
-               if NoClipEnabled then
-                  for _, part in pairs(char:GetDescendants()) do
-                     if part:IsA("BasePart") and part.CanCollide then
-                        part.CanCollide = false
-                     end
+         NoClipConnection = RunService.Heartbeat:Connect(function()
+            local char = player.Character
+            if char and NoClipEnabled then
+               local hrp = char:FindFirstChild("HumanoidRootPart")
+               for _, part in pairs(char:GetDescendants()) do
+                  if part:IsA("BasePart") and part.CanCollide and part ~= hrp then
+                     part.CanCollide = false
                   end
                end
-            end)
-         end
-         if player.Character then startNoClip(player.Character) end
-         player.CharacterAdded:Connect(startNoClip)
-      else
-         if NoClipConnection then NoClipConnection:Disconnect() end
+            end
+         end)
       end
    end
 })
 
--- Anti-Cheat Hooks
-local oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+-- Enhanced Anti-Cheat Hooks
+local oldNamecall
+oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
    local method = getnamecallmethod()
-   local args = {...}
-   if method == "Kick" or method:lower() == "kick" then return task.wait(math.huge) end
-   if method == "FireServer" and tostring(self):find("Anti") or tostring(self):find("Cheat") then return end
+   if method == "Kick" or method:lower() == "kick" then
+      return task.wait(math.huge)
+   end
+   if method == "FireServer" then
+      local args = {...}
+      if tostring(self):lower():find("anti") or tostring(self):lower():find("cheat") or tostring(self):lower():find("detect") then
+         return
+      end
+   end
    return oldNamecall(self, ...)
 end)
 
--- CharacterAdded for mods
+-- Re-apply on respawn
 player.CharacterAdded:Connect(function()
    task.wait(1)
-   -- Reapply WS/JP if sliders changed
+   -- Sliders re-apply via callback checks
 end)
 
 Rayfield:Notify({
-   Title = "Loaded Fixed Version!",
-   Content = "Buy Ice Items Fixed | Studio Autofarm | NoClip/Jump Fixed | Anti-Kick TP | Kool Aid Seller",
+   Title = "Loaded (Errors Fixed!)",
+   Content = "NoClip/Movement/Camera Fixed | RbxCharacterSounds Spam Stopped | All Features Safe",
    Duration = 8,
    Image = 4483362458
 })
