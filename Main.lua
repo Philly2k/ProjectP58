@@ -13,7 +13,7 @@ local Window = Rayfield:CreateWindow({
         Invite = "https://discord.gg/3cMRMVgffD",
         RememberJoins = true
     },
-    KeySystem = true,
+    KeySystem = false,
     KeySettings = {
         Title = "ProjectP58 Key system",
         Subtitle = "Key System",
