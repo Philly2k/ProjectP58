@@ -1,10 +1,17 @@
+-- Reliable Rayfield loader mirror (2026 working version)
 local success, Rayfield = pcall(function()
-    return loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source", true))()
 end)
 
 if not success or not Rayfield then
-    warn("Failed to load Rayfield UI: " .. tostring(Rayfield))
-    return -- Stop script safely
+    warn("Rayfield failed to load: " .. tostring(Rayfield))
+    -- Optional: show in-game message
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Trident Hub",
+        Text = "Failed to load UI - try different executor or check console",
+        Duration = 8
+    })
+    return  -- Stop safely if UI can't load
 end
 
 local Window = Rayfield:CreateWindow({
@@ -34,8 +41,6 @@ local Window = Rayfield:CreateWindow({
 })
 
 local executor = identifyexecutor and identifyexecutor() or "Unknown Executor"
--- ... (everything else stays the same from here)
-
 local MainTab = Window:CreateTab("Main", 4483362458)
 local TeleportsTab = Window:CreateTab("Teleports", 4483362458)
 local MiscTab = Window:CreateTab("Misc", 4483362458)
@@ -70,38 +75,36 @@ local ModFlags = {
 }
 -- Dupe variables
 local running = false
-
 local function getPing()
     local success, ping = pcall(function()
         return game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
     end)
     return success and math.clamp(ping, 30, 400) or 150
 end
-
 local function dupeOne()
     pcall(function()
         local char = LocalPlayer.Character
-        if not char or not char:FindFirstChild("HumanoidRootPart") then 
+        if not char or not char:FindFirstChild("HumanoidRootPart") then
             Rayfield:Notify({Title="Dupe Failed",Content="No character loaded",Duration=3})
-            return 
+            return
         end
-        
+       
         -- Find any tool (gun)
         local tool = char:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
-        if not tool then 
+        if not tool then
             Rayfield:Notify({Title="Dupe Error",Content="Equip a gun first!",Duration=4})
-            return 
+            return
         end
-        
+       
         -- Equip if needed
         if tool.Parent == LocalPlayer.Backpack then
             tool.Parent = char
             task.wait(0.4)
         end
-        
+       
         local toolName = tool.Name
         local specialId = nil
-        
+       
         -- Catch the SpecialId when market item spawns
         local conn = game.ReplicatedStorage.MarketItems.ChildAdded:Connect(function(item)
             if item.Name == toolName then
@@ -111,30 +114,30 @@ local function dupeOne()
                 end
             end
         end)
-        
+       
         -- Adaptive timing (works better on laggy servers)
         local pingAdjust = getPing() / 1000 * 1.2
         local delay = 0.28 + pingAdjust
-        
+       
         -- Step 1: Fake list weapon
         game.ReplicatedStorage.ListWeaponRemote:FireServer(toolName, 999999)
         task.wait(delay)
-        
+       
         -- Step 2: Store to backpack
         game.ReplicatedStorage.BackpackRemote:InvokeServer("Store", toolName)
         task.wait(delay + 0.15)
-        
+       
         -- Step 3: Remove from market if we captured ID
         if specialId then
             game.ReplicatedStorage.BuyItemRemote:FireServer(toolName, "Remove", specialId)
             task.wait(0.35)
         end
-        
+       
         -- Step 4: Grab duplicate back
         game.ReplicatedStorage.BackpackRemote:InvokeServer("Grab", toolName)
-        
+       
         conn:Disconnect()
-        
+       
         Rayfield:Notify({
             Title = "Dupe Success",
             Content = "Gun duplicated — check your backpack",
@@ -143,13 +146,12 @@ local function dupeOne()
         })
     end)
 end
-
 -- Auto dupe loop with slight randomization to avoid detection
 task.spawn(function()
     while true do
         if running then
             dupeOne()
-            task.wait(1.7 + math.random(2,8)/10)  -- 1.7–2.5s random delay
+            task.wait(1.7 + math.random(2,8)/10) -- 1.7–2.5s random delay
         else
             task.wait(0.1)
         end
@@ -196,10 +198,8 @@ local function teleportForward(distance)
     local hrp = char:FindFirstChild("HumanoidRootPart")
     local humanoid = char:FindFirstChildOfClass("Humanoid")
     if not hrp or not humanoid then return end
- 
     humanoid:ChangeState(0)
     repeat task.wait() until not LocalPlayer:GetAttribute("LastACPos")
- 
     local origin = hrp.Position
     local direction = hrp.CFrame.LookVector * distance
     local rayParams = RaycastParams.new()
@@ -207,7 +207,6 @@ local function teleportForward(distance)
     rayParams.FilterType = Enum.RaycastFilterType.Blacklist
     local raycastResult = Workspace:Raycast(origin, direction, rayParams)
     local teleportPos = raycastResult and (raycastResult.Position - hrp.CFrame.LookVector * 2) or (origin + direction)
- 
     if not isGrounded(hrp) then
         hrp.Velocity = Vector3.new(hrp.Velocity.X, fastFallSpeed, hrp.Velocity.Z)
     else
@@ -257,14 +256,12 @@ MainTab:CreateButton({
 })
 -- Dupe Guns Section
 MainTab:CreateSection("Gun Dupe")
-
 MainTab:CreateButton({
     Name = 'Dupe Gun (Single)',
     Callback = function()
         dupeOne()
     end,
 })
-
 MainTab:CreateToggle({
     Name = 'Auto Dupe Gun',
     CurrentValue = false,
@@ -277,15 +274,6 @@ MainTab:CreateToggle({
             Duration = 3.5,
             Image = 4483362458
         })
-    end,
-})
-})
-MainTab:CreateToggle({
-    Name = 'Auto Dupe Gun',
-    CurrentValue = false,
-    Flag = "AutoDupeGunToggle",
-    Callback = function(Value)
-        running = Value
     end,
 })
 -- Teleports Tab
@@ -376,7 +364,7 @@ FarmsTab:CreateButton({
     Callback = function()
         FadeIn(0.3)
         local speaker = LocalPlayer
-     
+    
         local function inlineTeleport(cframe)
             local char = speaker.Character
             if char and char:FindFirstChild('Humanoid') and char:FindFirstChild('HumanoidRootPart') then
