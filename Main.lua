@@ -1,19 +1,4 @@
--- Reliable Rayfield loader mirror (2026 working version)
-local success, Rayfield = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Rayfield/main/source", true))()
-end)
-
-if not success or not Rayfield then
-    warn("Rayfield failed to load: " .. tostring(Rayfield))
-    -- Optional: show in-game message
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Trident Hub",
-        Text = "Failed to load UI - try different executor or check console",
-        Duration = 8
-    })
-    return  -- Stop safely if UI can't load
-end
-
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield', true))()
 local Window = Rayfield:CreateWindow({
    Name = "Trident Hub",
    LoadingTitle = "Loading Trident Hub...",
@@ -39,7 +24,6 @@ local Window = Rayfield:CreateWindow({
       Key = {"Hello"}
    }
 })
-
 local executor = identifyexecutor and identifyexecutor() or "Unknown Executor"
 local MainTab = Window:CreateTab("Main", 4483362458)
 local TeleportsTab = Window:CreateTab("Teleports", 4483362458)
@@ -354,6 +338,47 @@ MiscTab:CreateToggle({
                 moveConnection:Disconnect()
                 moveConnection = nil
             end
+        end
+    end,
+})
+-- NEW: No Clip Toggle (added right here)
+MiscTab:CreateToggle({
+    Name = "No Clip",
+    CurrentValue = false,
+    Flag = "NoClipToggle",
+    Callback = function(Value)
+        local char = LocalPlayer.Character
+        if not char then 
+            Rayfield:Notify({Title="No Clip",Content="Character not loaded yet",Duration=3})
+            return 
+        end
+        
+        if Value then
+            -- Enable No Clip
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.CanCollide = false
+                end
+            end
+            Rayfield:Notify({
+                Title = "No Clip",
+                Content = "No Clip Enabled - Walk through walls",
+                Duration = 3,
+                Image = 4483362458
+            })
+        else
+            -- Disable No Clip (reset normal collisions)
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.CanCollide = true
+                end
+            end
+            Rayfield:Notify({
+                Title = "No Clip",
+                Content = "No Clip Disabled - Normal collisions restored",
+                Duration = 3,
+                Image = 4483362458
+            })
         end
     end,
 })
