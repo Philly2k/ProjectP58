@@ -5,11 +5,11 @@ local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
 local Options = Library.Options
 local Toggles = Library.Toggles
 
-
+local executor = identifyexecutor and identifyexecutor() or "Unknown Executor"
 
 local Window = Library:CreateWindow({
-    Title = '🎃 | Trxp.cc',
-    Footer = "Trxp.cc",
+    Title = '.🔱| Trident.Hub',
+    Footer = "Trident.Hub",
     NotifySide = "Right",
     ShowCustomCursor = true,
 })
@@ -27,12 +27,12 @@ local TweenService = game:GetService("TweenService")
 local player = game:GetService("Players").LocalPlayer or game:GetService("Players").PlayerAdded:Wait()
 local playerGui = player:WaitForChild("PlayerGui")
 
-if playerGui:FindFirstChild("TrxpFrame") then
-    playerGui.TrxpFrame:Destroy()
+if playerGui:FindFirstChild("TridentFrame") then
+    playerGui.TridentFrame:Destroy()
 end
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "TrxpFrame"
+screenGui.Name = "TridentFrame"
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
 
